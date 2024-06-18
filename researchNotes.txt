@@ -1,0 +1,175 @@
+diff = 3f
+f = 0.75 + f1 + f2
+f1 = clm((daytime - 72000) / 1440000, 0.0, 1.0) * 0.25 or 1.0 * 2.5 as daytime is large due to old world = 0.25
+thus,
+f = 1.00 + f2
+and,
+diff = 3.00 + 3f2
+f2 = f21 + f22
+f21 = min(inhabited / 3600000, 1.0)
+f22 = min(moonlight * 0.25, 0.25)
+
+f22 = {0.2500,0.1875,0.1250,0.0625,0}, as moonlight has 5 possible values
+
+diff = {3.75+3f21,3.5625+3f21,3.3750+3f21,3.1875+3f21,3.00+3f21}
+diff: [3.0, 6.75] and f21: [0.0, 1.0]
+
+Conclusion 1:
+
+patrolMembersNum = ceil(diff) + 1
+
+diff: (3.00, 4.00] implies that patrolMembersNum = 5, while diff: (4.00, 5.00] implies patrolMembersNum = 6, and so forth.
+
+Depending on moonlight value, patrolMembersNum will directly imply possible value ranges for inhabited.
+If a patrol spawns, the player usage of the chunk it spawns in is correlated to the number of patrol members.
+By checking the moon phase, it is possible to calculate how much player inhabited time the chunk could have had.
+The application of this deduction is to find the most traveled already generated chunks by guessing them based on the amount of total time found that players had inhabited them.
+
+Conclusion 2:
+
+huskDoHurtHungerTime = 140.0 * floor(diff) = 140.0 * 3.0 or 140.0 * 4.0 or 140.0 * 5.0 or 140.0 * 6.0 by definition of diff
+Thus, huskDoHurtHungerTime = {420.0, 560.0, 700.0, 840.0}t = {21, 28, 35, 42}s, depending on diff
+
+and,
+diffRange(huskDoHurtHungerTime) = {21s:[3.000,3.999],28s:[4.000,4.999],35s:[5.000,5.999],42s:[6.000,6.75]}
+
+Actual example:
+huskDoHurtHungerTime = ?, diff = 2.2513857
+huskDoHurtHungerTime / 140.0 = floor(2.2513857)
+huskDoHurtHungerTime = 280.0
+* 14 seconds of hunger recorded == 280 ticks
+Furthermore:
+This will happen as long as diff: [2.0, 3.0) 
+In this scenario, diff = 2.25 + 3f21, so,
+2.0 <= 2.25 + 3f21 < 3.0
+0 < f21 < 0.25 -> f21: (0, 0.25) as long as huskDoHurtHungerTime = 280.0
+
+f21 Table (derived from above conclusions):
+
+		     clientRequestedDiff
+hungerTime		3.0000				3.1875				3.3750				3.5625				3.7500
+21s     		[0.0000,0.3333]		[0.0000,0.2708]		[0.0000,0.2083]		[0.0000,0.1458]		[0.0000,0.0833]
+28s				[0.3333,0.6666]		[0.2708,0.6041]		[0.2083,0.5416]		[0.1458,0.4791]		[0.0833,0.4166]
+35s				[0.6666,0.9999]		[0.6041,0.9374]		[0.5416,0.8750]		[0.4792,0.8125]		[0.4166,0.7500]
+42s				[1.0000,1.0000]		[0.9375,1.0000]		[0.8750,1.0000]		[0.8125,1.0000]		[0.7500,1.0000]
+
+Experiment 1:
+Location: Random desert village in the middle of nowhere on 6b6t
+huskDoHurtHungerTime = 21s
+clientRequestedDiff = 3.1875
+-> f21: [0.0,0.2708] -> inhabitedChunkTicks: [0,974880]
+Conclusion: Player activity is under 13.54 hours all time
+
+Experiment 2:
+Location: private server
+clientRequestedDiff = 3.75
+inhabitedChunkTicks manually set to 400000, so f21 = ~0.1111
+huskDoHurtHungerTime: 28s
+Conclusion: 
+huskDoHurtHungerTime corresponds to f21 lookup range on table.
+THIS THEORY IS PROVEN!
+
+Application of theory:
+During full moons on worlds with very large world age that are on HARD difficulty, 
+huskDoHurtHungerTime = 21s indicates there is <4.17h of total player activity in the chunk
+huskDoHurtHungerTime = 28s indicates player activity is [4.17,20.83]h in the chunk
+
+Conclusion 3:
+Burning Zombie lights you on fire IF: nextFloat < 0.3diff 
+
+Therefore,
+
+Case 1: nextFloat < {0.9000,0.9563,1.0125,1.0688,1.1250} + 0.9f21 <==> Burning Zombie lights you on fire
+Case 2: nextFloat >= {0.9000,0.9563} + 0.9f21 <==> Burning Zombie doesn't light you on fire
+nextFloat: (0.000,1.000) = random value we can retrieve by guess and check random seeds
+f21: [0.0000,1.0000] = ?
+
+Since Case 1 holds true when a burning Zombie lights you on fire and nextFloat: (0.0000,0.9000), it is impossible to guess and check any value within that range among the outputs of the RandomSource.
+
+So, we'll work with Case 2, assuming a burning Zombie doesn't light you on fire
+
+nextFloat >= 0.9000 + 0.9f21, (new moon), where nextFloat: [0.9000,0.9999]
+nextFloat >= 0.9563 + 0.9f21, (cresent moon), where nextFloat: [0.9563,0.9999]
+
+Application of Theory:
+The inequalities presented can only show that f21 is less than a found value. Therefore, there is no application possible for this theory.
+
+Conclusion 4:
+Skeleton horse spawns at a lightning strike during the rain (skeleton horse trap) IF: nextDouble < 0.01diff
+
+Therefore,
+
+Case 1: nextDouble < {0.030000,0.031875,0.033750,0.035625,0.037500} + 0.03f21 <==> skeleton horse trap
+Case 2: nextDouble >= {0.030000,0.031875,0.033750,0.035625,0.037500} + 0.03f21 <==> no skeleton horse trap
+nextDouble: (0.0000,1.0000) = random double determinable from finding a unique double in the history of random generated doubles that only can determine the outcome that happened.
+f21: [0.0000,1.0000] = ?
+
+Assume that nextDouble: (0.000000,0.067500) because this will make it easy to dertermine the value, so we assume there has been a skeleton horse trap and that we know the value of nextDouble:
+
+nextDouble < {0.030000,0.031875,0.033750,0.035625,0.037500} + 0.03f21
+
+Application of Theory:
+Same as Conclusion 4.
+
+Conclusion 5:
+Zombie can break a door it sees IF: nextFloat < 0.1multiplier
+nextFloat: (0.0000,1.0000) = random float determinable from finding a unique float in the history of random generated floats that only can determine the outcome that happened.
+multiplier = (diff - 2.0) / 2.0
+multiplier = ({1.0000,1.1875,1.3750,1.5675,1.7500} + 3f21) / 2.0
+multiplier = {0.5000,0.5938,0.6875,0.7838,0.8750} + 1.5f21, where if multiplier > 1.0, multiplier = 1.0 
+f21: [0.0000,1.0000] = inhabited / 3600000t, where if f21 > 1.0, f21 = 1.0
+inhabited: [0,inf)t = ?
+'t' means "tick" time unit
+multiplier: [0.5000,1.0000]
+
+Assume that nextFloat < 0.1multiplier and that the Zombie starts breaking a door it sees, then:
+
+nextFloat < {0.05000,0.05938,0.06875,0.07838,0.08750} + 0.15f21
+where nextFloat: [0.0001,0.0999]
+
+For our theory, let's take the example that it's a new moon, on an old world with HARD difficulty, so:
+
+nextFloat < 0.05 + 0.15f21
+nextFloat - 0.05 < 0.15f21
+f21 > 6.6666 * (nextFloat - 0.05)
+
+Now subsitute the definition of f21.
+
+inhabited / 3600000t > 6.6666 * (nextFloat - 0.05)
+inhabited > 23999760t * (nextFloat - 0.05) (in ticks 't')
+inhabited > 1199988s * (nextFloat - 0.05) (in seconds 's')
+inhabited > 19999.8m * (nextFloat - 0.05) (in minutes 'm')
+
+We assume that we only test nextFloat outcomes that are constrainted by, in order for a test where the event COULD occur and inhabited: [0,1197588]t under those conditions: 
+nextFloat: [0.0500,0.0999]
+
+* Test the correctness of this THEORY!
+
+Test 1: Assume inhabited < 4m and nextFloat = 0.0502
+Once I have inhabited the chunk for 4m, inhabited > 4m and the right side of the equation.
+This can be seen by the Zombie that spawns being able to break the door while the other Zombies can't
+
+Notes:
+- At ~2mins in the chunk, spawned Zombie cannot break door
+- At >4mins in the chunk, spawned Zombie can break door!!
+
+THIS PROVES THEORY! NOW CRACKING nextFloat and knowing the value can determine inhabited!
+
+Furthermore, we can say, the indicator of inhabited where nextFloat falls in this range IS the outcome of the event:
+
+When we set nextFloat = 0.0502 <==> evalating the rule yields that the event occuring will mean inhabited >= 4m, if it doesn't, inhabited < 4m.
+
+However, we will only be evaluating tests where a Zombie DID break the door, as we assumed it was able to and nextFloat is contrained.
+
+We now have working logic, as long as nextFloat IS known.
+
+Cracking nextFloat:
+
+Cracking the current seed of the RandomSource, directly after the Zombie spawns allows us to step the seed back until we find the seed that produced the float value that we want to know.
+
+Entry points for cracking the RandomSource current seed are: (Usable) nextFloat(), nextDouble(), nextLong() | (Not usable) nextInt(), nextBoolean().
+
+nextInt() cannot be used because of the following:
+Since next(31) mod bound = nextIntOutcome can allow the call next(31) to have multiple values that equate to nextIntOutcome, it follows that it's impossible to actually determine the specific seed that was used in the call to next(31).
+
+nextBoolean() cannot be used because it produces a binary outcome. Thus, we have 2^47 seeds to actually consider as the specific seed for the outcome, making cracking virtually impossible and not attemptable.
