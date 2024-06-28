@@ -1,6 +1,9 @@
 .idea/
 *.iml
 
+run/
+run-data/
+
 gradle/
 .gradle/
 
