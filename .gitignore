@@ -1,10 +1,37 @@
-.idea/
+#IDE files
+.idea
 *.iml
 
-run/
-run-data/
-
+#Gradle
 gradle/
 .gradle/
+# Ignore Gradle GUI config
+MC 1.20.1 Source Code/gradle-app.setting
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+MC 1.20.1 Source Code/!gradle-wrapper.jar
+#Run files
+runclient
 
+#Build files
 build
+out/
+run/
+runserver/
+run-data/
+
+#MCP Source code
+MC 1.20.1 Source Code/src/
+
+#Forge MC 1.20.1 Server
+Forge 1.20.1 Server/logs/
+#Exclude world folder
+Forge 1.20.1 Server/2b2t_org/
+#Exclude server files
+Forge 1.20.1 Server/server.properties
+Forge 1.20.1 Server/usercache.json
+Forge 1.20.1 Server/usernamecache.json
+Forge 1.20.1 Server/ops.json
+Forge 1.20.1 Server/eula.txt
+Forge 1.20.1 Server/banned-ips.json
+Forge 1.20.1 Server/banned-players.json
+Forge 1.20.1 Server/user_jvm_args.txt

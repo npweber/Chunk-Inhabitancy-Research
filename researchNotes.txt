@@ -173,3 +173,9 @@ nextInt() cannot be used because of the following:
 Since next(31) mod bound = nextIntOutcome can allow the call next(31) to have multiple values that equate to nextIntOutcome, it follows that it's impossible to actually determine the specific seed that was used in the call to next(31).
 
 nextBoolean() cannot be used because it produces a binary outcome. Thus, we have 2^47 seeds to actually consider as the specific seed for the outcome, making cracking virtually impossible and not attemptable.
+
+The next step in cracking nextFloat will be done by cracking the initialSeed used in the ServerLevelRandomSource in order to determine any outcome at any time of execution for the RNG.
+
+This will be continued on a separate file.
+
+<COME BACK HERE LATER>

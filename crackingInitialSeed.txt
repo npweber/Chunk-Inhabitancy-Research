@@ -1,0 +1,16 @@
+The initial seed for the SeverLevelRandomSource is determined by System.nanoTime() upon ServerLevel.class init.
+This occurs <10 seconds before the ServerLevel goes up and begins to tick.
+
+However, that initialSeed is only used in RNG execution ONCE the server is ticking.
+
+We have devised a method for determining the approximate nanoSecond value for which the ServerLevel begins to tick.
+That means, there are 10^9 possible nanoSeconds relative to that nanoSecond that could determine the initialSeed.
+Thus, we can guess and check 10^9 possible initialSeeds against a measured outcome by the ServerLevelRandomSource.
+
+The outcome we will use is the itemYRotation of an item tossed ~5s after the ServerLevel goes up (as soon as we can enter the ServerLevel).
+
+So, run 10^9 determined possible initialSeeds for 5s of RNG execution with the criteria that the correct one produces the partial seed measured from the outcome at ~5s into its outcome.
+
+Experiment 1:
+
+?
