@@ -1,12 +1,14 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.npwdev.fabrix.inhabitancy.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "package": "net.npwdev.fabrix.inhabit.mixin",
+  "compatibilityLevel": "JAVA_17",
   "refmap": "inhabit.refmap.json",
   "mixins": [
   ],
   "client": [
+    "MixinClientPacketListener",
+    "MixinEntity"
   ],
   "injectors": {
     "defaultRequire": 1

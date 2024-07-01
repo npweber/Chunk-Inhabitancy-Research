@@ -5,6 +5,8 @@
 #Gradle
 gradle/
 .gradle/
+gradlew
+gradle.bat
 # Ignore Gradle GUI config
 MC 1.20.1 Source Code/gradle-app.setting
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
