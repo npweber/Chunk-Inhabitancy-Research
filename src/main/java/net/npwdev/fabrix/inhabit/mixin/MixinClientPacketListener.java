@@ -15,18 +15,17 @@ public class MixinClientPacketListener {
 
     @Inject(method = "handleSetTime", at = @At("HEAD"))
     public void handleSetTime(ClientboundSetTimePacket setTimePacket, CallbackInfo info) {
-        Inhabitancy.trackServerTime(setTimePacket.getDayTime());
+        Inhabitancy.trackServerTick(setTimePacket.getDayTime());
     }
 
     @Inject(method = "handleDisconnect", at = @At("HEAD"))
     public void handleDisconnect(ClientboundDisconnectPacket disconnectPacket, CallbackInfo info) {
         if(disconnectPacket.getReason().getString().equals("Server closed"))
-            Inhabitancy.stopTrackingServerTime();
+            Inhabitancy.stopWaitingForServerDown();
     }
 
     @Inject(method = "handleKeepAlive", at = @At("HEAD"))
     public void handleKeepAlive(ClientboundKeepAlivePacket keepAlivePacket, CallbackInfo info) {
-        if(Inhabitancy.shouldRecordKeepAlive())
-            Inhabitancy.captureServerNanoMoment(keepAlivePacket.getId());
+        Inhabitancy.determineServerUpNano(keepAlivePacket.getId());
     }
 }

@@ -17,12 +17,12 @@ public class Inhabitancy {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "inhabitancy";
 
-    private static long serverTime;
-    private static long serverNanoMoment;
+    private static long serverTick;
+    private static long serverDownTick;
 
-    private static boolean shouldCaptureItem;
-    private static boolean shouldCaptureTime = true;
-    private static boolean shouldRecordKeepAlive;
+    private static boolean shouldDetermineLeftSeedBits;
+    private static boolean shouldRecordServerDownTick = true;
+    private static boolean shouldDetermineServerUpNano;
 
     public Inhabitancy() {
         // Register ourselves for server and other game events we are interested in
@@ -35,7 +35,7 @@ public class Inhabitancy {
     @SubscribeEvent
     public void onItemToss(ItemTossEvent itemTossEvent) {
         //if
-        shouldCaptureItem = true;
+        shouldDetermineLeftSeedBits = true;
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
@@ -48,36 +48,31 @@ public class Inhabitancy {
         return LogManager.getLogger();
     }
 
-    public static boolean shouldCapture() {
-        return shouldCaptureItem;
-    }
-
-    public static boolean shouldRecordKeepAlive() {
-        return shouldRecordKeepAlive;
-    }
-
     public static void determineLeftSeedBits(float yRot) {
-        shouldCaptureItem = false;
-        yRot /= 360.0f;
-        yRot *= 1 << 24;
-        long leftBits = (long) yRot << 24;
-        getLogger().debug("{}", leftBits);
-    }
-
-    public static void trackServerTime(long time) {
-        if(shouldCaptureTime)
-            serverTime = time;
-        else if(serverNanoMoment != 0L) {
-            shouldRecordKeepAlive = false;
-            serverNanoMoment -= (time - serverTime) * 50_000_000;
+        if(shouldDetermineLeftSeedBits) {
+            shouldDetermineLeftSeedBits = false;
+            yRot /= 360.0f;
+            yRot *= 1 << 24;
+            long leftBits = (long) yRot << 24;
         }
     }
 
-    public static void stopTrackingServerTime(){
-        shouldCaptureTime = false;
+    public static void trackServerTick(long tick) {
+        if(shouldRecordServerDownTick)
+            serverDownTick = tick;
+        else
+            serverTick = tick;
     }
 
-    public static void captureServerNanoMoment(long keepAlive){
-        serverNanoMoment = keepAlive;
+    public static void stopWaitingForServerDown(){
+        shouldRecordServerDownTick = false;
+        shouldDetermineServerUpNano = true;
+    }
+
+    public static void determineServerUpNano(long keepAlive){
+        if(shouldDetermineServerUpNano) {
+            shouldDetermineServerUpNano = false;
+            long serverUpNano = (keepAlive * 1_000_000) - (serverTick - serverDownTick) * 50_000_000;
+        }
     }
 }
